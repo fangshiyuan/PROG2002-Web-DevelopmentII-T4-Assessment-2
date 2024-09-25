@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Fundraisers | Created by Shiyuan Fang 23774676</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: 0 auto; }
+        .fundraiser { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+        nav { background: #f8f8f8; padding: 10px; }
+        nav a { margin-right: 15px; text-decoration: none; color: #333; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body onload="fetchCategories()">
+    <div class="container">
+        <h1>Search Fundraisers</h1>
+
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="search.html">Search Fundraisers</a>
+        </nav>
+
+        <form id="search-form">
+            <label for="organizer">Organizer:</label>
+            <input type="text" id="organizer" name="organizer"><br><br>
+
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city"><br><br>
+
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                <option value="">Select a Category</option>
+            </select><br><br>
+
+            <button type="submit">Search</button>
+            <button type="button" onclick="clearForm()">Clear</button>
+        </form>
+
+        <h2>Search Results</h2>
+        <div id="search-results"></div>
+    </div>
+
+    <script src="RESTAPI.js"></script> 
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let organizer = document.getElementById('organizer').value.trim();
+            let city = document.getElementById('city').value.trim();
+            let category = document.getElementById('category').value;
+
+            if (!organizer && !city && !category) {
+                alert("Please select at least one option.");
+                return;
+            }
+
+            fetchFundraisers(organizer, city, category);
+        });
+
+        function fetchFundraisers(organizer, city, category) {
+            // Modify the URL 
+            let url = `/api/search?organizer=${encodeURIComponent(organizer)}&city=${encodeURIComponent(city)}&category=${encodeURIComponent(category)}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No matching fundraisers found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let resultsDiv = document.getElementById('search-results');
+                    resultsDiv.innerHTML = ''; // Clear previous results
+                    if (data.length > 0) {
+                        data.forEach(fundraiser => {
+                            let fundraiserDiv = document.createElement('div');
+                            fundraiserDiv.classList.add('fundraiser');
+                            fundraiserDiv.innerHTML = `<h3><a href="/fundraiser/${fundraiser.id}">${fundraiser.caption}</a></h3>
+                                                       <p>Organizer: ${fundraiser.organizer}</p>
+                                                       <p>City: ${fundraiser.city}</p>
+                                                       <p>Category: ${fundraiser.category}</p>`;
+                            resultsDiv.appendChild(fundraiserDiv);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = '<p class="error">No fundraisers found.</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('search-results').innerHTML = `<p class="error">${error.message}</p>`;
+                });
+        }
+
+        function fetchCategories() {
+            // Fetch categories 
+            fetch('/api/categories')
+                .then(response => response.json())
+                .then(data => {
+                    let categorySelect = document.getElementById('category');
+                    data.forEach(category => {
+                        let option = document.createElement('option');
+                        option.value = category.NAME;
+                        option.text = category.NAME;
+                        categorySelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching categories:', error);
+                });
+        }
+
+        function clearForm() {
+            document.getElementById('organizer').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('search-results').innerHTML = ''; // Clear results
+        }
+    </script>
+</body>
+</html>

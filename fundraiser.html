@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraiser Details | Created by Shiyuan Fang 23774676</title>
+
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: 0 auto; }
+        nav { background: #f8f8f8; padding: 10px; }
+        nav a { margin-right: 15px; text-decoration: none; color: #333; }
+        .fundraiser-details { margin-top: 20px; }
+        h3 { font-size: 24px; }
+        p { font-size: 18px; margin: 5px 0; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body onload="fetchFundraiserDetails()">
+    <div class="container">
+        <h1>Fundraiser Details</h1>
+
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="search.html">Search Fundraisers</a>
+        </nav>
+
+        <div id="fundraiser-details" class="fundraiser-details">
+            <p>Fundraiser ID: <span id="fundraiser-id"></span></p>
+            <p>Organizer: <span id="fundraiser-organizer"></span></p>
+            <p>Caption: <span id="fundraiser-caption"></span></p>
+            <p>Target Funding: <span id="fundraiser-target"></span> AUD</p>
+            <p>Current Funding: <span id="fundraiser-current"></span> AUD</p>
+            <p>City: <span id="fundraiser-city"></span></p>
+            <p>Active: <span id="fundraiser-active"></span></p>
+            <p>Category ID: <span id="fundraiser-category-id"></span></p>
+            <button onclick="alert('This feature is under construction')">Donate</button>
+        </div>
+    </div>
+
+    <script>
+        function fetchFundraiserDetails() {
+            // Parse query string from URL to get the selected fundraiser ID
+            const params = new URLSearchParams(window.location.search);
+            const fundraiserId = params.get('id');
+
+            if (!fundraiserId) {
+                alert('No fundraiser selected');
+                return;
+            }
+
+            // Call the API to fetch fundraiser details by ID
+            fetch(`/api/fundraiser/${fundraiserId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('fundraiser-id').innerText = data.id;
+                    document.getElementById('fundraiser-organizer').innerText = data.organizer;
+                    document.getElementById('fundraiser-caption').innerText = data.caption;
+                    document.getElementById('fundraiser-target').innerText = data.target_funding;
+                    document.getElementById('fundraiser-current').innerText = data.current_funding;
+                    document.getElementById('fundraiser-city').innerText = data.city;
+                    document.getElementById('fundraiser-active').innerText = data.active ? 'Yes' : 'No';
+                    document.getElementById('fundraiser-category-id').innerText = data.category_id;
+                })
+                .catch(error => {
+                    console.error('Error fetching fundraiser details:', error);
+                    alert('Failed to load fundraiser details');
+                });
+        }
+    </script>
+</body>
+</html>
